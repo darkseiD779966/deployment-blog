@@ -1,0 +1,97 @@
+parameters:
+  microservices: []
+
+jobs:
+- ${{ each service in parameters.microservices }}:
+    - job: Deploy_${{ service.name }}
+      displayName: Deploy ${{ service.name }}
+      condition: and(succeeded(), contains(variables['TriggeredByPaths'], '${{ service.name }}'))
+      pool:
+        vmImage: 'ubuntu-latest'
+      steps:
+        # Preprocess service name and set a variable
+        - script: |
+            echo "Preprocessing service name: ${{ service.name }}"
+            # Replace underscores with hyphens for Kubernetes compatibility
+            KUBE_COMPLIANT_NAME=$(echo '${{ service.name }}' | tr '_' '-')
+            echo "Processed service name: $KUBE_COMPLIANT_NAME"
+            echo "##vso[task.setvariable variable=KubeCompliantName]$KUBE_COMPLIANT_NAME"
+          displayName: "Preprocess Service Name"
+
+        # Log details of the service and preprocessed name
+        - script: |
+            echo "Logging deployment details..."
+            echo "Original Service Name: ${{ service.name }}"
+            echo "Kubernetes Compliant Service Name: $(KubeCompliantName)"
+            echo "Container Name: ${{ service.containerName }}"
+            echo "Port: ${{ service.port }}"
+            echo "Triggered Paths: $(TriggeredByPaths)"
+            echo "Build ID: $(BuildId_${{ service.name }})"
+          displayName: "Log Service and Deployment Details"
+
+        # Log YAML to verify correctness before deployment
+        - script: |
+            echo "Logging Kubernetes YAML to be deployed:"
+            echo "apiVersion: apps/v1"
+            echo "kind: Deployment"
+            echo "metadata:"
+            echo "  name: $(KubeCompliantName)"
+            echo "spec:"
+            echo "  replicas: 1"
+            echo "  selector:"
+            echo "    matchLabels:"
+            echo "      app: $(KubeCompliantName)"
+            echo "  template:"
+            echo "    metadata:"
+            echo "      labels:"
+            echo "        app: $(KubeCompliantName)"
+            echo "    spec:"
+            echo "      containers:"
+            echo "      - name: $(KubeCompliantName)"
+            echo "        image: '/${{ service.containerName }}:$(BuildId_${{ service.name }})'"
+            echo "        ports:"
+            echo "        - containerPort: ${{ service.port }}"
+          displayName: "Log Kubernetes YAML"
+
+        # Kubernetes deployment
+        - task: Kubernetes@1
+          displayName: "Deploy $(KubeCompliantName)"
+          inputs:
+            kubernetesServiceEndpoint: lm-con
+            namespace: default
+            action: deploy
+            configurationType: 'inlineContent'
+            inlineContent: |
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: $(KubeCompliantName)
+              spec:
+                replicas: 1
+                selector:
+                  matchLabels:
+                    app: $(KubeCompliantName)
+                template:
+                  metadata:
+                    labels:
+                      app: $(KubeCompliantName)
+                  spec:
+                    containers:
+                    - name: $(KubeCompliantName)
+                      image: '${{ service.containerName }}:$(BuildId_${{ service.name }})'
+                      ports:
+                      - containerPort: ${{ service.port }}
+
+        # Log the result of the Kubernetes deployment
+        - script: |
+            echo "Deployment completed for $(KubeCompliantName)"
+            echo "Listing all deployments in the default namespace:"
+            kubectl get deployments -n default
+            echo "Describing the deployed service:"
+            kubectl describe deployment $(KubeCompliantName) -n default
+          displayName: "Log Deployment Status"
+
+        # Log completion of the deployment
+        - script: |
+            echo "Deployment for ${{ service.name }} (Kubernetes Compliant Name: $(KubeCompliantName)) has been successfully completed."
+          displayName: "Log Deployment Completion"

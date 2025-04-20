@@ -1,0 +1,24 @@
+parameters:
+  microservices: []
+
+jobs:
+- ${{ each service in parameters.microservices }}:
+    - job: Build_${{ service.name }}
+      displayName: Build and Push ${{ service.name }} Docker Image
+      condition: and(succeeded(), contains(variables['TriggeredByPaths'], '${{ service.name }}'))
+      pool:
+        vmImage: 'ubuntu-latest'
+      steps:
+        - task: Docker@2
+          displayName: Build and Push ${{ service.name }} Image
+          inputs:
+            containerRegistry: 'lm-docker-con'
+            repository: '${{ service.name }}'
+            command: 'buildAndPush'
+            Dockerfile: '${{ service.dockerfile }}'
+            tags: |
+              $(Build.BuildId)
+        - script: |
+            echo "##vso[task.setvariable variable=BuildId;isOutput=true]$(Build.BuildId)"
+           
+          name: SetBuildId
