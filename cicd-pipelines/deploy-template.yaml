@@ -29,7 +29,7 @@ jobs:
             echo "Build ID: $(BuildId_${{ service.name }})"
           displayName: "Log Service and Deployment Details"
 
-        # Log YAML to verify correctness before deployment
+        # Log YAML to verify correctness before deployment to Kubernetes
         - script: |
             echo "Logging Kubernetes YAML to be deployed:"
             echo "apiVersion: apps/v1"
