@@ -9,7 +9,7 @@ jobs:
       pool:
         vmImage: 'ubuntu-latest'
       steps:
-        # Preprocess service name and set a variable
+        # Preprocess service name and set a variable kubernet
         - script: |
             echo "Preprocessing service name: ${{ service.name }}"
             # Replace underscores with hyphens for Kubernetes compatibility
