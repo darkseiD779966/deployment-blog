@@ -82,7 +82,7 @@ jobs:
                       ports:
                       - containerPort: ${{ service.port }}
 
-        # Log the result of the Kubernetes deployment
+        # Log the result of the Kubernetes deployment process has succeeded or failed
         - script: |
             echo "Deployment completed for $(KubeCompliantName)"
             echo "Listing all deployments in the default namespace:"
