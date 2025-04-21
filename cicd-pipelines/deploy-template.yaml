@@ -53,7 +53,7 @@ jobs:
             echo "        - containerPort: ${{ service.port }}"
           displayName: "Log Kubernetes YAML"
 
-        # Kubernetes deployment
+        # Kubernetes deployment task
         - task: Kubernetes@1
           displayName: "Deploy $(KubeCompliantName)"
           inputs:
