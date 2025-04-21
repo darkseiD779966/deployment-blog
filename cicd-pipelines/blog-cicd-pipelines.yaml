@@ -67,7 +67,7 @@ stages:
             cat $(MANIFEST_PATH)
           displayName: Verify Updated Manifest
 
-        # Deploy the updated manifest to Kubernetes s
+        # Deploy the updated manifest to Kubernetes using the KubernetesManifest task
         - task: KubernetesManifest@1
           displayName: Deploy to Kubernetes
           inputs:
