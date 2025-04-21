@@ -18,7 +18,7 @@ jobs:
             echo "##vso[task.setvariable variable=KubeCompliantName]$KUBE_COMPLIANT_NAME"
           displayName: "Preprocess Service Name"
 
-        # Log details of the service and preprocessed name
+        # Log details of the service and preprocessed name for deployment
         - script: |
             echo "Logging deployment details..."
             echo "Original Service Name: ${{ service.name }}"
