@@ -61,7 +61,7 @@ stages:
         - checkout: self
           displayName: Checkout Updated Repository
           
-        # Optionally verify that the updated manifest is present
+        # Optionally verify that the updated manifest is present in the repository
         - script: |
             echo "Checking updated manifest file content:"
             cat $(MANIFEST_PATH)
