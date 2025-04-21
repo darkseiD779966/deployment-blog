@@ -91,7 +91,7 @@ jobs:
             kubectl describe deployment $(KubeCompliantName) -n default
           displayName: "Log Deployment Status"
 
-        # Log completion of the deployment
+        # Log completion of the deployment process has succeeded
         - script: |
             echo "Deployment for ${{ service.name }} (Kubernetes Compliant Name: $(KubeCompliantName)) has been successfully completed."
           displayName: "Log Deployment Completion"
